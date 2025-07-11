@@ -14,4 +14,7 @@ spec:
     spec:
       containers:
         - name: todo-app
-          image: jpvalencia/todo-app:latest
+          image: jpvalencia/todo-app:4fd25fd3fddb
+          env:
+            - name: PORT
+              value: "5000"

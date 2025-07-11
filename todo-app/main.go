@@ -10,11 +10,10 @@ import (
 
 func main() {
 	router := gin.Default()
+	router.LoadHTMLFiles("index.html")
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
 	})
 
 	port := os.Getenv("PORT")
