@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: log-output
+  name: log-output-dep
 spec:
   replicas: 1
   selector:
@@ -14,4 +14,4 @@ spec:
     spec:
       containers:
         - name: log-output
-          image: jpvalencia/log-output:latest
+          image: jpvalencia/log-output:ec572c7f98d7
