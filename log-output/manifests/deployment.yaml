@@ -12,6 +12,17 @@ spec:
       labels:
         app: log-output
     spec:
+      volumes:
+        - name: shared-folder
+          emptyDir: {}
       containers:
-        - name: log-output
-          image: jpvalencia/log-output:ec572c7f98d7
+        - name: log-webapp
+          image: jpvalencia/log-webapp:478701359a79
+          volumeMounts:
+          - name: shared-folder
+            mountPath: /usr/src/app/files
+        - name: string-generator
+          image: jpvalencia/string-generator:09e1504ed695
+          volumeMounts:
+          - name: shared-folder
+            mountPath: /usr/src/app/files
