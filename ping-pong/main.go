@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,18 @@ func main() {
 
 	router.GET("/ping", func(c *gin.Context) {
 		visits++
+
+		file, err := os.Create("/usr/src/app/files/visits.txt")
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		_, err = file.WriteString(strconv.Itoa(visits))
+		if err != nil {
+			panic(err)
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"pong": visits,
 		})

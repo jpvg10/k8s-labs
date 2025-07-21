@@ -7,9 +7,16 @@ spec:
   - http:
       paths:
       - path: /
-        pathType: Prefix
+        pathType: Exact
         backend:
           service:
             name: log-output-svc
             port:
               number: 2345
+      - path: /ping
+        pathType: Exact
+        backend:
+          service:
+            name: ping-pong-svc
+            port:
+              number: 3456

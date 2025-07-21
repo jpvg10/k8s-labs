@@ -12,9 +12,16 @@ spec:
       labels:
         app: ping-pong
     spec:
+      volumes:
+        - name: shared-folder
+          persistentVolumeClaim:
+            claimName: log-output-claim
       containers:
         - name: ping-pong
-          image: jpvalencia/ping-pong:c163989c7ea0
+          image: jpvalencia/ping-pong:870f5b2f4e59
+          volumeMounts:
+          - name: shared-folder
+            mountPath: /usr/src/app/files
           env:
             - name: PORT
               value: "4000"

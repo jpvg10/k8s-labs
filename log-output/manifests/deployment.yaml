@@ -14,10 +14,11 @@ spec:
     spec:
       volumes:
         - name: shared-folder
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: log-output-claim
       containers:
         - name: log-webapp
-          image: jpvalencia/log-webapp:478701359a79
+          image: jpvalencia/log-webapp:e8c3ba8d74a7
           volumeMounts:
           - name: shared-folder
             mountPath: /usr/src/app/files
