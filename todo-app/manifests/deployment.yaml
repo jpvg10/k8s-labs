@@ -12,9 +12,16 @@ spec:
       labels:
         app: todo-app
     spec:
+      volumes:
+        - name: shared-folder
+          persistentVolumeClaim:
+            claimName: pv-claim
       containers:
         - name: todo-app
-          image: jpvalencia/todo-app:4fd25fd3fddb
+          image: jpvalencia/todo-app:7803adad2ecb
+          volumeMounts:
+          - name: shared-folder
+            mountPath: /usr/src/app/files
           env:
             - name: PORT
               value: "5000"
