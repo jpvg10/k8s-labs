@@ -15,7 +15,7 @@ spec:
       volumes:
         - name: shared-folder
           persistentVolumeClaim:
-            claimName: log-output-claim
+            claimName: pv-claim
       containers:
         - name: ping-pong
           image: jpvalencia/ping-pong:870f5b2f4e59

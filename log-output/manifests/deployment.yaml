@@ -15,7 +15,7 @@ spec:
       volumes:
         - name: shared-folder
           persistentVolumeClaim:
-            claimName: log-output-claim
+            claimName: pv-claim
       containers:
         - name: log-webapp
           image: jpvalencia/log-webapp:e8c3ba8d74a7

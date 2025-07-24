@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: log-output-claim
+  name: pv-claim
 spec:
-  storageClassName: log-output-pv
+  storageClassName: common-pv
   accessModes:
     - ReadWriteOnce
   resources:
