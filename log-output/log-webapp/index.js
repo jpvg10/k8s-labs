@@ -4,23 +4,56 @@ const path = require('path')
 
 const directory = path.join('/', 'usr', 'src', 'app', 'files')
 const logPath = path.join(directory, 'log.txt')
-const visitsPath = path.join(directory, 'visits.txt')
+const { 
+    PING_PONG_SVC_URL = 'http://localhost:4000',
+    PORT = '3000'
+} = process.env
+
+const getRequest = (url) => {
+    return new Promise((resolve, reject) => {
+        http.get(url, (res) => {
+            if (res.statusCode !== 200) {
+                reject()
+            }
+
+            let data = ''
+            res.on('data', (chunk) => {
+                data += chunk
+            })
+
+            res.on('close', () => {
+                resolve(JSON.parse(data))
+            })
+        })
+    })
+}
 
 const server = http.createServer((req, res) => {
-    if (fs.existsSync(logPath) && fs.existsSync(visitsPath)) {
+    if (fs.existsSync(logPath)) {
         const log = fs.readFileSync(logPath)
-        const visits = `Ping/pongs: ${fs.readFileSync(visitsPath)}`
-        res.writeHead(200, { 'Content-Type': 'text/plain' })
-        res.end(`${log}\n${visits}`)
+
+        getRequest(`${PING_PONG_SVC_URL}/ping-count`)
+            .then((data) => {
+                res.writeHead(200, { 'Content-Type': 'text/plain' })
+                res.end(`${log}\nPing/pongs: ${data.pings}`)
+            })
+            .catch(() => {
+                const msg = 'Error: Failed to retrieve ping-pong count'
+                console.log(msg)
+                res.writeHead(500, { 'Content-Type': 'text/plain' })
+                res.end(msg)
+            })
+        
     } else {
+        const msg = 'Error: File not found'
+        console.log(msg)
         res.writeHead(500, { 'Content-Type': 'text/plain' })
-        res.end('Error: File not found')
+        res.end(msg)
     }
 })
 
-const port = process.env.PORT || 3000
 const host = '0.0.0.0'
-
-server.listen(port, host, () => {
-    console.log(`Server running at http://${host}:${port}/`)
+server.listen(PORT, host, () => {
+    console.log(`Server running at http://${host}:${PORT}/`)
+    console.log(`Ping-pong service URL: ${PING_PONG_SVC_URL}`)
 })

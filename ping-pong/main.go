@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,25 +15,20 @@ func main() {
 	router.GET("/ping", func(c *gin.Context) {
 		visits++
 
-		file, err := os.Create("/usr/src/app/files/visits.txt")
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-
-		_, err = file.WriteString(strconv.Itoa(visits))
-		if err != nil {
-			panic(err)
-		}
-
 		c.JSON(http.StatusOK, gin.H{
 			"pong": visits,
 		})
 	})
 
+	router.GET("/ping-count", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"pings": visits,
+		})
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "4000"
 	}
 
 	fmt.Printf("Server started in port %s\n", port)
