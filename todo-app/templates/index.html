@@ -8,13 +8,14 @@
 <body>
     <h1>Hello world</h1>
     <img src="{{ .imagePath }}" />
-    <form>
-        <input type="text" maxlength="140" />
+    <form action="/createTodo" method="POST" name="createTodoForm">
+        <input type="text" maxlength="140" name="description" />
         <input type="submit" value="Create" />
     </form>
     <ul>
-        <li>Learn Kubernetes</li>
-        <li>Build a project</li>
+        {{ range .todos }}
+            <li>{{ .Description }}</li>
+        {{ end }}
     </ul>
 </body>
 </html>

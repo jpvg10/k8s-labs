@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +11,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+type Todo struct {
+	Description string
+}
+
+type TodoArray struct {
+	Todos []Todo
+}
 
 func getImage(imagePath string) (err error) {
 	url := "https://picsum.photos/200"
@@ -19,13 +29,13 @@ func getImage(imagePath string) (err error) {
 	}
 	defer out.Close()
 
-	resp, err := http.Get(url)
+	res, err := http.Get(url)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
-	_, err = io.Copy(out, resp.Body)
+	_, err = io.Copy(out, res.Body)
 	if err != nil {
 		return err
 	}
@@ -34,11 +44,12 @@ func getImage(imagePath string) (err error) {
 }
 
 func main() {
-	var timestamp time.Time
+	todoBackendUrl := os.Getenv("TODO_BACKEND_URL")
 	imagePath := "/usr/src/app/files/image.jpg"
+	var timestamp time.Time
 
 	router := gin.Default()
-	router.LoadHTMLFiles("index.html")
+	router.LoadHTMLGlob("templates/*")
 	router.StaticFile("/image.jpg", imagePath)
 
 	router.GET("/", func(c *gin.Context) {
@@ -46,20 +57,47 @@ func main() {
 
 		if current.Sub(timestamp).Seconds() > 10*60 {
 			fmt.Println("Getting new image")
-			getImage(imagePath)
+			err := getImage(imagePath)
+			if err != nil {
+				fmt.Println("Error fetching the image")
+			}
 			timestamp = current
 		} else {
 			fmt.Println("Using cached image")
 		}
 
+		var todos TodoArray
+		res, err := http.Get(fmt.Sprintf("%s/todos", todoBackendUrl))
+		if err != nil {
+			fmt.Println("Error fetching the Todos")
+		} else {
+			defer res.Body.Close()
+			decoder := json.NewDecoder(res.Body)
+			err = decoder.Decode(&todos)
+			if err != nil {
+				fmt.Println("Error decoding the Todos")
+			}
+		}
+
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"imagePath": "/image.jpg",
+			"todos":     todos.Todos,
 		})
+	})
+
+	router.POST("/createTodo", func(c *gin.Context) {
+		desc := c.PostForm("description")
+		jsonValue, _ := json.Marshal(gin.H{"description": desc})
+		res, err := http.Post(fmt.Sprintf("%s/todos", todoBackendUrl), "application/json", bytes.NewBuffer(jsonValue))
+		if err != nil || res.StatusCode >= 400 {
+			fmt.Println("Error posting the Todo")
+		}
+		c.Redirect(http.StatusFound, "/")
 	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "5000"
 	}
 
 	fmt.Printf("Server started in port %s\n", port)

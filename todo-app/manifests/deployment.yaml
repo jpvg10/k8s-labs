@@ -18,10 +18,12 @@ spec:
             claimName: pv-claim
       containers:
         - name: todo-app
-          image: jpvalencia/todo-app:7803adad2ecb
+          image: jpvalencia/todo-app:05186a112e32
           volumeMounts:
           - name: shared-folder
             mountPath: /usr/src/app/files
           env:
             - name: PORT
               value: "5000"
+            - name: TODO_BACKEND_URL
+              value: http://todo-backend-svc:4567
