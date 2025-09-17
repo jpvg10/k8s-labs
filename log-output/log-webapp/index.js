@@ -1,6 +1,6 @@
-const fs = require('fs')
-const http = require('http')
-const path = require('path')
+import * as fs from 'node:fs/promises'
+import http from 'http'
+import path from 'path'
 
 const directory = path.join('/', 'usr', 'src', 'app', 'files')
 const logPath = path.join(directory, 'log.txt')
@@ -11,7 +11,7 @@ const {
 
 const getRequest = (url) => {
     return new Promise((resolve, reject) => {
-        http.get(url, (res) => {
+        const req = http.get(url, (res) => {
             if (res.statusCode !== 200) {
                 reject()
             }
@@ -25,26 +25,28 @@ const getRequest = (url) => {
                 resolve(JSON.parse(data))
             })
         })
+
+        req.on('error', (err) => {
+            reject(err)
+        })
     })
 }
 
-const server = http.createServer((req, res) => {
-    if (fs.existsSync(logPath)) {
-        const log = fs.readFileSync(logPath)
+const server = http.createServer(async (req, res) => {
+    try {
+        const log = await fs.readFile(logPath)
 
-        getRequest(`${PING_PONG_SVC_URL}/ping-count`)
-            .then((data) => {
-                res.writeHead(200, { 'Content-Type': 'text/plain' })
-                res.end(`${log}\nPing/pongs: ${data.pings}`)
-            })
-            .catch(() => {
-                const msg = 'Error: Failed to retrieve ping-pong count'
-                console.log(msg)
-                res.writeHead(500, { 'Content-Type': 'text/plain' })
-                res.end(msg)
-            })
-        
-    } else {
+        try {
+            const data = await getRequest(`${PING_PONG_SVC_URL}/ping-count`)
+            res.writeHead(200, { 'Content-Type': 'text/plain' })
+            res.end(`${log}\nPing/pongs: ${data.pings}`)
+        } catch {
+            const msg = 'Error: Failed to retrieve ping-pong count'
+            console.log(msg)
+            res.writeHead(500, { 'Content-Type': 'text/plain' })
+            res.end(msg)
+        }
+    } catch {
         const msg = 'Error: File not found'
         console.log(msg)
         res.writeHead(500, { 'Content-Type': 'text/plain' })

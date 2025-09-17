@@ -1,19 +1,21 @@
-const fs = require('fs')
-const path = require('path')
+import { stat, mkdir, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 const num = Math.floor(Math.random() * 1000000)
 const str = `string-${num}`
 
-const directory = path.join('/', 'usr', 'src', 'app', 'files')
-const filePath = path.join(directory, 'log.txt')
+const directory = join('/', 'usr', 'src', 'app', 'files')
+const filePath = join(directory, 'log.txt')
 
-if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory)
+try {
+    await stat(directory)
+} catch (error) {
+    await mkdir(directory)
 }
 
-setInterval(() => {
+setInterval(async () => {
     const date = new Date().toJSON()
     const line = `${date}: ${str}`
     console.log(line)
-    fs.writeFileSync(filePath, line)
+    await writeFile(filePath, line)
 }, 5000)
