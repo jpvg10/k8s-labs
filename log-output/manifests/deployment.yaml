@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: log-output-dep
+  namespace: exercises
 spec:
   replicas: 1
   selector:
@@ -15,10 +16,10 @@ spec:
       volumes:
         - name: shared-folder
           persistentVolumeClaim:
-            claimName: pv-claim
+            claimName: log-output-pv-claim
       containers:
         - name: log-webapp
-          image: jpvalencia/log-webapp:e1f5616cd4a5
+          image: jpvalencia/log-webapp:7da9ef9d1642
           volumeMounts:
             - name: shared-folder
               mountPath: /usr/src/app/files
@@ -28,7 +29,7 @@ spec:
             - name: PING_PONG_SVC_URL
               value: "http://ping-pong-svc:3456"
         - name: string-generator
-          image: jpvalencia/string-generator:09e1504ed695
+          image: jpvalencia/string-generator:3cd81820d22e
           volumeMounts:
             - name: shared-folder
               mountPath: /usr/src/app/files
