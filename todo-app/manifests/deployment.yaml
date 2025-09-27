@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-app-dep
+  namespace: project
 spec:
   replicas: 1
   selector:
@@ -15,10 +16,10 @@ spec:
       volumes:
         - name: shared-folder
           persistentVolumeClaim:
-            claimName: pv-claim
+            claimName: todo-app-pv-claim
       containers:
         - name: todo-app
-          image: jpvalencia/todo-app:05186a112e32
+          image: jpvalencia/todo-app:74f822f87738
           volumeMounts:
           - name: shared-folder
             mountPath: /usr/src/app/files
