@@ -17,17 +17,31 @@ spec:
         - name: shared-folder
           persistentVolumeClaim:
             claimName: log-output-pv-claim
+        - name: information
+          configMap:
+            name: log-output-configmap
+            items:
+              - key: information.txt
+                path: information.txt
       containers:
         - name: log-webapp
-          image: jpvalencia/log-webapp:7da9ef9d1642
+          image: jpvalencia/log-webapp:4fe62f950ede
           volumeMounts:
             - name: shared-folder
               mountPath: /usr/src/app/files
+            - name: information
+              mountPath: /information
+              readOnly: true
           env:
             - name: PORT
               value: "3000"
             - name: PING_PONG_SVC_URL
               value: "http://ping-pong-svc:3456"
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: log-output-configmap
+                  key: message
         - name: string-generator
           image: jpvalencia/string-generator:3cd81820d22e
           volumeMounts:
