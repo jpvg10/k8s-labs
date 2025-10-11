@@ -16,6 +16,6 @@ spec:
       containers:
         - name: todo-backend
           image: jpvalencia/todo-backend:b3c8b4ae33c7
-          env:
-            - name: PORT
-              value: "6000"
+          envFrom:
+            - configMapRef:
+                name: todo-backend-configmap

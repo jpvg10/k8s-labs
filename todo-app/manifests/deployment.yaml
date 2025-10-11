@@ -23,8 +23,6 @@ spec:
           volumeMounts:
           - name: shared-folder
             mountPath: /usr/src/app/files
-          env:
-            - name: PORT
-              value: "5000"
-            - name: TODO_BACKEND_URL
-              value: http://todo-backend-svc:4567
+          envFrom:
+            - configMapRef:
+                name: todo-app-configmap
