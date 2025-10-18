@@ -20,9 +20,6 @@ func getEnv(key, fallback string) string {
 func getVisits(db *sql.DB) (int, error) {
 	var visits int
 	err := db.QueryRow(`SELECT "visits" FROM "pingpong" WHERE "id"=$1`, 1).Scan(&visits)
-	if err == sql.ErrNoRows {
-		return 0, nil
-	}
 	return visits, err
 }
 
