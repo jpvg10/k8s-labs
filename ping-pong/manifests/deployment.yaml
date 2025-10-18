@@ -15,7 +15,12 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: jpvalencia/ping-pong:5b6327d3e066
+          image: jpvalencia/ping-pong:0a9205a7afb8
           env:
             - name: PORT
               value: "4000"
+            - name: DB_HOST
+              value: "postgres-svc"
+            # TODO: store password in a Secret
+            - name: DB_PASSWORD
+              value: example
