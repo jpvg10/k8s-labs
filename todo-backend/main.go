@@ -84,10 +84,18 @@ func main() {
 			return
 		}
 
+		if len(newTodo.Description) > 140 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Description must be maximum 140 characters",
+			})
+			fmt.Println("Failed to create todo due to exceeding 140 character limit.")
+			return
+		}
+
 		err := addTodo(db, newTodo)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Failed to create new todo",
+				"error": "Failed to add new todo to the database",
 			})
 			return
 		}
