@@ -37,6 +37,10 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   identity {
     type = "SystemAssigned"
   }
+
+  web_app_routing {
+    dns_zone_ids = []
+  }
 }
 
 output "client_certificate" {
