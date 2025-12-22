@@ -1,1 +1,8 @@
 bin/
+
+**/.terraform/*
+
+*.tfstate
+*.tfstate.*
+
+*.tfvars
