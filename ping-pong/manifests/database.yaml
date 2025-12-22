@@ -60,7 +60,7 @@ spec:
         name: postgres-data-storage
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: default
         resources:
           requests:
-            storage: 100Mi
+            storage: 1Gi
