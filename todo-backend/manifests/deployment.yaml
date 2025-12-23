@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: jpvalencia/todo-backend:af325376ac5e
+          image: PROJECT/IMAGE
           envFrom:
             - configMapRef:
                 name: todo-backend-configmap

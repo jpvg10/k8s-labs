@@ -4,6 +4,7 @@ metadata:
   name: todo-app-ingress
   namespace: project
 spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
   rules:
   - http:
       paths:
