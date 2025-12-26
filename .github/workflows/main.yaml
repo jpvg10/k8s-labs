@@ -15,9 +15,10 @@ permissions:
   id-token: write  # Required for OIDC authentication
   contents: read
 
-# env:
+env:
   # RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   # CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+  REGISTRY_LOGIN_SERVER: ${{ secrets.REGISTRY_LOGIN_SERVER }}
 
 jobs:
   build-and-push:
@@ -49,10 +50,9 @@ jobs:
 
       - name: Docker build and push ACR
         run: |
-          az acr login --name ${{ secrets.REGISTRY_LOGIN_SERVER }}
-          echo "${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} -f ${{ matrix.app.path }}"
-          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} -f ${{ matrix.app.path }}
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+          az acr login --name ${{ env.REGISTRY_LOGIN_SERVER }}
+          docker build -t ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} ${{ matrix.app.path }}
+          docker push ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
 
       # - name: Build and push Docker image
       #   uses: docker/build-push-action@v5
@@ -66,7 +66,7 @@ jobs:
 
       - name: Log image push details
         run: |
-          echo "Image pushed: ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
+          echo "Image pushed: ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
 
   # deploy-to-aks:
   #   needs: build-and-push
@@ -89,12 +89,12 @@ jobs:
   #     - name: Update todo-app image in kustomization
   #       run: |
   #         cd todo-app
-  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
+  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ env.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
       
   #     - name: Update todo-backend image in kustomization
   #       run: |
   #         cd todo-backend
-  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
+  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ env.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
 
   #     - name: Deploy todo-app using Kustomize
   #       run: |
