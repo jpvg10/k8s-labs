@@ -1,0 +1,106 @@
+name: Build, push to ACR, and deploy to AKS
+# Using OIDC for authentication
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'todo-app/**'
+      - 'todo-backend/**'
+      - '.github/workflows/**'
+
+# env:
+  # RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  # CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - name: todo-app
+            # dockerfile: todo-app/Dockerfile
+            path: todo-app
+          - name: todo-backend
+            # dockerfile: todo-backend/Dockerfile
+            path: todo-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # - name: Set Git Commit SHA
+      #   run: |
+      #     echo "GIT_COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Docker build and push ACR
+        run: |
+          az acr login --name ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} -f ${{ matrix.app.path }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./${{ matrix.app.path }}
+      #     file: ${{ matrix.app.dockerfile }}
+      #     push: true
+      #     tags: |
+      #       ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+      #       ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:latest
+
+      - name: Log image push details
+        run: |
+          echo "Image pushed: ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
+
+  # deploy-to-aks:
+  #   needs: build-and-push
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #     - name: Set AKS context
+  #       uses: azure/aks-set-context@v3
+  #       with:
+  #         resource-group: ${{ env.RESOURCE_GROUP }}
+  #         cluster-name: ${{ env.CLUSTER_NAME }}
+
+  #     - name: Update todo-app image in kustomization
+  #       run: |
+  #         cd todo-app
+  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
+      
+  #     - name: Update todo-backend image in kustomization
+  #       run: |
+  #         cd todo-backend
+  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
+
+  #     - name: Deploy todo-app using Kustomize
+  #       run: |
+  #         kubectl build todo-app | kubectl apply -f -
+  #         kubectl build todo-backend | kubectl apply -f -
+
+  #     - name: Verify deployment
+  #       run: |
+  #         kubectl rollout status deployment --all-namespaces --timeout=5m || true
+  #         kubectl get pods -A
+
+  #     - name: Show deployment status
+  #       run: |
+  #         echo "=== Deployment Status ==="
+  #         kubectl get all -A
