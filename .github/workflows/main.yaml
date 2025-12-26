@@ -9,6 +9,11 @@ on:
       - 'todo-app/**'
       - 'todo-backend/**'
       - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write  # Required for OIDC authentication
+  contents: read
 
 # env:
   # RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
