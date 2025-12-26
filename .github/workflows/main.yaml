@@ -50,6 +50,7 @@ jobs:
       - name: Docker build and push ACR
         run: |
           az acr login --name ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          echo "${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} -f ${{ matrix.app.path }}"
           docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} -f ${{ matrix.app.path }}
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
 
