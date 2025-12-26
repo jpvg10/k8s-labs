@@ -16,17 +16,25 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
-resource "azurerm_resource_group" "k8s_labs" {
+# Should exist
+
+data "azurerm_resource_group" "k8s_labs" {
   name     = "k8s-labs"
-  location = "Sweden Central"
 }
+
+data "azurerm_container_registry" "acr" {
+    name                = "k8sLabsContainerRegistry"
+    resource_group_name = data.azurerm_resource_group.k8s_labs.name
+}
+
+# Cluster
 
 resource "azurerm_kubernetes_cluster" "cluster" {
   name                = "k8s-labs-cluster"
-  location            = azurerm_resource_group.k8s_labs.location
-  resource_group_name = azurerm_resource_group.k8s_labs.name
+  location            = data.azurerm_resource_group.k8s_labs.location
+  resource_group_name = data.azurerm_resource_group.k8s_labs.name
   dns_prefix          = "k8slabscluster"
-  sku_tier = "Free"
+  sku_tier            = "Free"
 
   default_node_pool {
     name       = "default"
@@ -49,6 +57,13 @@ output "client_certificate" {
 }
 
 output "kube_config" {
-  value = azurerm_kubernetes_cluster.cluster.kube_config_raw
+  value     = azurerm_kubernetes_cluster.cluster.kube_config_raw
   sensitive = true
+}
+
+resource "azurerm_role_assignment" "role" {
+  principal_id                     = azurerm_kubernetes_cluster.cluster.kubelet_identity[0].object_id
+  role_definition_name             = "AcrPull"
+  scope                            = data.azurerm_container_registry.acr.id
+  skip_service_principal_aad_check = true
 }
