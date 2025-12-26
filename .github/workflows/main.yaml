@@ -15,10 +15,9 @@ permissions:
   id-token: write  # Required for OIDC authentication
   contents: read
 
-env:
+# env:
   # RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   # CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
-  REGISTRY_LOGIN_SERVER: ${{ secrets.REGISTRY_LOGIN_SERVER }}
 
 jobs:
   build-and-push:
@@ -27,10 +26,8 @@ jobs:
       matrix:
         app:
           - name: todo-app
-            # dockerfile: todo-app/Dockerfile
             path: todo-app
           - name: todo-backend
-            # dockerfile: todo-backend/Dockerfile
             path: todo-backend
 
     steps:
@@ -44,29 +41,15 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # - name: Set Git Commit SHA
-      #   run: |
-      #     echo "GIT_COMMIT_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
-
-      - name: Docker build and push ACR
+      - name: Docker build and push to ACR
         run: |
-          az acr login --name ${{ env.REGISTRY_LOGIN_SERVER }}
-          docker build -t ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} ${{ matrix.app.path }}
-          docker push ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
-
-      # - name: Build and push Docker image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./${{ matrix.app.path }}
-      #     file: ${{ matrix.app.dockerfile }}
-      #     push: true
-      #     tags: |
-      #       ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
-      #       ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:latest
+          az acr login --name ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} ${{ matrix.app.path }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
 
       - name: Log image push details
         run: |
-          echo "Image pushed: ${{ env.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
+          echo "Image pushed: ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
 
   # deploy-to-aks:
   #   needs: build-and-push
@@ -75,10 +58,12 @@ jobs:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
 
-  #     - name: Azure Login
-  #       uses: azure/login@v1
+  #     - name: Azure login
+  #       uses: azure/login@v2
   #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #         client-id: ${{ secrets.AZURE_CLIENT_ID }}
+  #         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+  #         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
   #     - name: Set AKS context
   #       uses: azure/aks-set-context@v3
@@ -89,12 +74,12 @@ jobs:
   #     - name: Update todo-app image in kustomization
   #       run: |
   #         cd todo-app
-  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ env.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
+  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
       
   #     - name: Update todo-backend image in kustomization
   #       run: |
   #         cd todo-backend
-  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ env.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
+  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
 
   #     - name: Deploy todo-app using Kustomize
   #       run: |
