@@ -91,33 +91,8 @@ jobs:
           renderEngine: kustomize
           kustomizationPath: ${{ matrix.app.path }}
           kubectl-version: latest
-      
+
       - uses: azure/k8s-deploy@v4
         with:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
           namespace: project
-
-      # - name: Update todo-app image in kustomization
-      #   run: |
-      #     cd todo-app
-      #     kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
-
-      # - name: Update todo-backend image in kustomization
-      #   run: |
-      #     cd todo-backend
-      #     kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
-
-      # - name: Deploy todo-app using Kustomize
-      #   run: |
-      #     kubectl build todo-app | kubectl apply -f -
-      #     kubectl build todo-backend | kubectl apply -f -
-
-      # - name: Verify deployment
-      #   run: |
-      #     kubectl rollout status deployment --all-namespaces --timeout=5m || true
-      #     kubectl get pods -A
-
-      # - name: Show deployment status
-      #   run: |
-      #     echo "=== Deployment Status ==="
-      #     kubectl get all -A
