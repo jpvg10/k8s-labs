@@ -11,6 +11,10 @@ variable "subscription_id" {
   type = string
 }
 
+variable "github_actions_service_principal_id" {
+  type = string
+}
+
 provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
@@ -19,12 +23,12 @@ provider "azurerm" {
 # Should exist
 
 data "azurerm_resource_group" "k8s_labs" {
-  name     = "k8s-labs"
+  name = "k8s-labs"
 }
 
 data "azurerm_container_registry" "acr" {
-    name                = "k8sLabsContainerRegistry"
-    resource_group_name = data.azurerm_resource_group.k8s_labs.name
+  name                = "k8sLabsContainerRegistry"
+  resource_group_name = data.azurerm_resource_group.k8s_labs.name
 }
 
 # Cluster
@@ -61,9 +65,16 @@ output "kube_config" {
   sensitive = true
 }
 
-resource "azurerm_role_assignment" "role" {
-  principal_id                     = azurerm_kubernetes_cluster.cluster.kubelet_identity[0].object_id
-  role_definition_name             = "AcrPull"
-  scope                            = data.azurerm_container_registry.acr.id
-  skip_service_principal_aad_check = true
+# Roles
+
+resource "azurerm_role_assignment" "acr_pull" {
+  principal_id         = azurerm_kubernetes_cluster.cluster.kubelet_identity[0].object_id
+  role_definition_name = "AcrPull"
+  scope                = data.azurerm_container_registry.acr.id
+}
+
+resource "azurerm_role_assignment" "github_aks_access" {
+  principal_id         = var.github_actions_service_principal_id
+  role_definition_name = "Azure Kubernetes Service Cluster User Role"
+  scope                = azurerm_kubernetes_cluster.cluster.id
 }

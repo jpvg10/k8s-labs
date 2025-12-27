@@ -14,8 +14,9 @@ terraform init
 terraform plan
 terraform apply
 
-# Store REGISTRY_LOGIN_SERVER, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID (without quotes)
-# as secrets on the GitHub repository
+# Store REGISTRY_LOGIN_SERVER, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID (without quotes) as secrets on the GitHub repository
+
+# Copy SERVICE_PRINCIPAL_ID to aks-cluster/terraform.tfvars
 
 # To see the output values again:
 terraform output

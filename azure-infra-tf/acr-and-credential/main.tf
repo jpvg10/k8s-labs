@@ -64,6 +64,10 @@ output "AZURE_TENANT_ID" {
   value = azuread_service_principal.service_principal.application_tenant_id
 }
 
+output "SERVICE_PRINCIPAL_ID" {
+  value = azuread_service_principal.service_principal.object_id
+}
+
 resource "azurerm_role_assignment" "role_assignment" {
   scope                = azurerm_container_registry.acr.id
   role_definition_name = "AcrPush"
