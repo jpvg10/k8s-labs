@@ -82,7 +82,9 @@ jobs:
       - name: Update image in kustomization
         run: |
           cd ${{ matrix.app.path }}
-          kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+          IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+          sed -E -i.bak "s|PROJECT/IMAGE|${IMAGE}|g" kustomization.yaml
+          kubectl kustomize .
 
       - uses: azure/k8s-bake@v3
         id: bake
@@ -94,6 +96,7 @@ jobs:
       - uses: azure/k8s-deploy@v4
         with:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          namespace: project
 
       # - name: Update todo-app image in kustomization
       #   run: |
