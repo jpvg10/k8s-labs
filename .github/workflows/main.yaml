@@ -15,9 +15,9 @@ permissions:
   id-token: write  # Required for OIDC authentication
   contents: read
 
-# env:
-  # RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
-  # CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+env:
+  RESOURCE_GROUP: k8s-labs
+  CLUSTER_NAME: k8s-labs-cluster
 
 jobs:
   build-and-push:
@@ -51,47 +51,71 @@ jobs:
         run: |
           echo "Image pushed: ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
 
-  # deploy-to-aks:
-  #   needs: build-and-push
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  deploy-to-aks:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - name: todo-app
+            path: todo-app
+          - name: todo-backend
+            path: todo-backend
 
-  #     - name: Azure login
-  #       uses: azure/login@v2
-  #       with:
-  #         client-id: ${{ secrets.AZURE_CLIENT_ID }}
-  #         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-  #         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Set AKS context
-  #       uses: azure/aks-set-context@v3
-  #       with:
-  #         resource-group: ${{ env.RESOURCE_GROUP }}
-  #         cluster-name: ${{ env.CLUSTER_NAME }}
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-  #     - name: Update todo-app image in kustomization
-  #       run: |
-  #         cd todo-app
-  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+
+      - name: Update image in kustomization
+        run: |
+          cd ${{ matrix.app.path }}
+          kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+
+      - uses: azure/k8s-bake@v3
+        id: bake
+        with:
+          renderEngine: kustomize
+          kustomizationPath: ${{ matrix.app.path }}
+          kubectl-version: latest
       
-  #     - name: Update todo-backend image in kustomization
-  #       run: |
-  #         cd todo-backend
-  #         kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
+      - uses: azure/k8s-deploy@v4
+        with:
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
 
-  #     - name: Deploy todo-app using Kustomize
-  #       run: |
-  #         kubectl build todo-app | kubectl apply -f -
-  #         kubectl build todo-backend | kubectl apply -f -
+      # - name: Update todo-app image in kustomization
+      #   run: |
+      #     cd todo-app
+      #     kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-app:${{ github.sha }}
 
-  #     - name: Verify deployment
-  #       run: |
-  #         kubectl rollout status deployment --all-namespaces --timeout=5m || true
-  #         kubectl get pods -A
+      # - name: Update todo-backend image in kustomization
+      #   run: |
+      #     cd todo-backend
+      #     kubectl kustomize edit set image PROJECT/IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/todo-backend:${{ github.sha }}
 
-  #     - name: Show deployment status
-  #       run: |
-  #         echo "=== Deployment Status ==="
-  #         kubectl get all -A
+      # - name: Deploy todo-app using Kustomize
+      #   run: |
+      #     kubectl build todo-app | kubectl apply -f -
+      #     kubectl build todo-backend | kubectl apply -f -
+
+      # - name: Verify deployment
+      #   run: |
+      #     kubectl rollout status deployment --all-namespaces --timeout=5m || true
+      #     kubectl get pods -A
+
+      # - name: Show deployment status
+      #   run: |
+      #     echo "=== Deployment Status ==="
+      #     kubectl get all -A
