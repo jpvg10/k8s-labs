@@ -3,8 +3,6 @@ name: Build, push to ACR, and deploy to AKS
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'todo-app/**'
       - 'todo-backend/**'
@@ -66,6 +64,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set branch env var
+        run: |
+          branch="${GITHUB_REF#refs/heads/}"
+          if [ "$branch" = "main" ]; then
+            ns="project"
+          else
+            ns="$branch"
+          fi
+          echo "NAMESPACE=$ns" >> $GITHUB_ENV
+
       - name: Azure login
         uses: azure/login@v2
         with:
@@ -79,11 +87,12 @@ jobs:
           resource-group: ${{ env.RESOURCE_GROUP }}
           cluster-name: ${{ env.CLUSTER_NAME }}
 
-      - name: Update image in kustomization
+      - name: Update image and namespace in kustomization
         working-directory: ./${{ matrix.app.path }}
         run: |
           IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
           sed -E -i "s|(^[[:space:]]*newName:[[:space:]]*).*|\1${IMAGE}|" kustomization.yaml
+          echo "namespace: ${{ env.NAMESPACE }}" >> kustomization.yaml
 
       - uses: azure/k8s-bake@v3
         id: bake
@@ -92,7 +101,11 @@ jobs:
           kustomizationPath: ${{ matrix.app.path }}
           kubectl-version: latest
 
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }} || true
+
       - uses: azure/k8s-deploy@v4
         with:
           manifests: ${{ steps.bake.outputs.manifestsBundle }}
-          namespace: project
+          namespace: ${{ env.NAMESPACE }}
