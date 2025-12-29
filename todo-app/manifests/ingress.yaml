@@ -1,3 +1,4 @@
+# TODO: fix bug with same IP address in different namespaces
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
