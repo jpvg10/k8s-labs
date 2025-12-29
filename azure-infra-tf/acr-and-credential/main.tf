@@ -75,10 +75,10 @@ resource "azurerm_role_assignment" "role_assignment" {
   principal_type       = "ServicePrincipal"
 }
 
-resource "azuread_application_federated_identity_credential" "federated_credential" {
-  application_id = azuread_application.entra_app.id
-  display_name   = "github-deploy"
-  audiences      = ["api://AzureADTokenExchange"]
-  issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_username}/${var.github_repo}:ref:refs/heads/main"
+resource "azuread_application_flexible_federated_identity_credential" "federated_credential" {
+  application_id             = azuread_application.entra_app.id
+  display_name               = "github-deploy"
+  audience                   = "api://AzureADTokenExchange"
+  issuer                     = "https://token.actions.githubusercontent.com"
+  claims_matching_expression = "claims['sub'] matches 'repo:${var.github_username}/${var.github_repo}:ref:refs/heads/*'"
 }
