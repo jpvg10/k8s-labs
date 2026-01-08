@@ -10,7 +10,7 @@ spec:
         spec:
           containers:
           - name: todo-reminder
-            image: jpvalencia/todo-reminder:a63f9fdc6603
+            image: jpvalencia/todo-reminder-job:c6adc105a937
             env:
             - name: TODO_BACKEND_URL
               value: http://todo-backend-svc:4567

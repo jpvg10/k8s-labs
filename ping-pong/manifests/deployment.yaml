@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: jpvalencia/ping-pong:0a9205a7afb8
+          image: jpvalencia/ping-pong:e0999e4374c6
           env:
             - name: PORT
               value: "4000"

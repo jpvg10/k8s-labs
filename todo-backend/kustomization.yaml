@@ -8,4 +8,4 @@ resources:
   - manifests/service.yaml
 images:
   - name: PROJECT/IMAGE
-    newName: jpvalencia/todo-backend:af325376ac5e
+    newName: jpvalencia/todo-backend:c111fe3a3ecc

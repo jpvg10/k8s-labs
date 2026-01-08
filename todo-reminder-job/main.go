@@ -30,6 +30,7 @@ func main() {
 		res, err := http.Post(fmt.Sprintf("%s/todos", todoBackendUrl), "application/json", bytes.NewBuffer(jsonValue))
 		if err != nil || res.StatusCode >= 400 {
 			fmt.Println("Error posting the Todo")
+			return
 		}
 
 		fmt.Printf("Created todo:\n\t%s\n", desc)
