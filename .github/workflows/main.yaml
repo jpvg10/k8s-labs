@@ -91,14 +91,14 @@ jobs:
         working-directory: ./${{ matrix.app.path }}
         run: |
           IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
-          sed -E -i "s|(^[[:space:]]*newName:[[:space:]]*).*|\1${IMAGE}|" kustomization.yaml
-          echo "namespace: ${{ env.NAMESPACE }}" >> kustomization.yaml
+          sed -E -i "s|(^[[:space:]]*newName:[[:space:]]*).*|\1${IMAGE}|" kustomize/base/kustomization.yaml
+          echo "namespace: ${{ env.NAMESPACE }}" >> kustomize/base/kustomization.yaml
 
       - uses: azure/k8s-bake@v3
         id: bake
         with:
           renderEngine: kustomize
-          kustomizationPath: ${{ matrix.app.path }}
+          kustomizationPath: ${{ matrix.app.path }}/kustomize/overlays/azure
           kubectl-version: latest
 
       - name: Create namespace if not exists
