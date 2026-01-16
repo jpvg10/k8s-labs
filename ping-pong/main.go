@@ -79,6 +79,19 @@ func main() {
 		}
 	})
 
+	router.GET("/ready", func(c *gin.Context) {
+		err := db.Ping()
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error": "Database not ready",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ready",
+		})
+	})
+
 	port := getEnv("PORT", "4000")
 
 	fmt.Printf("Server started in port %s\n", port)

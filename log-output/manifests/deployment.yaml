@@ -25,7 +25,7 @@ spec:
                 path: information.txt
       containers:
         - name: log-webapp
-          image: jpvalencia/log-webapp:4fe62f950ede
+          image: jpvalencia/log-webapp:07f3866e8d78
           volumeMounts:
             - name: shared-folder
               mountPath: /usr/src/app/files
@@ -42,6 +42,12 @@ spec:
                 configMapKeyRef:
                   name: log-output-configmap
                   key: message
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            httpGet:
+               path: /ready
+               port: 3000
         - name: string-generator
           image: jpvalencia/string-generator:3cd81820d22e
           volumeMounts:

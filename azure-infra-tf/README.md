@@ -49,4 +49,5 @@ When Azure is not needed anymore:
 ```bash
 cd acr-and-credential
 terraform destroy
+# Note that if this is re-created in the future, GitHub secrets need to be replaced
 ```

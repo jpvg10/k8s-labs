@@ -33,6 +33,19 @@ const getRequest = (url) => {
 }
 
 const server = http.createServer(async (req, res) => {
+    if (req.url === '/ready') {
+        try {
+            const data = await getRequest(`${PING_PONG_SVC_URL}/ping-count`)
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ status: 'ready' }))
+        } catch {
+            const msg = 'Error: Failed to retrieve ping-pong count'
+            res.writeHead(503, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: 'Ping pong service not ready' }))
+        }
+        return
+    }
+
     let log = ''
     let info = ''
     try {

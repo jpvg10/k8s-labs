@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: jpvalencia/ping-pong:e0999e4374c6
+          image: jpvalencia/ping-pong:e9aac7fbb840
           env:
             - name: PORT
               value: "4000"
@@ -24,3 +24,9 @@ spec:
             # TODO: store password in a Secret
             - name: DB_PASSWORD
               value: example
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            httpGet:
+               path: /ready
+               port: 4000
