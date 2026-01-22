@@ -95,6 +95,25 @@ func main() {
 		c.Redirect(http.StatusFound, "/")
 	})
 
+	router.GET("/healthz", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "OK",
+		})
+	})
+
+	router.GET("/ready", func(c *gin.Context) {
+		_, err := http.Get(fmt.Sprintf("%s/healthz", todoBackendUrl))
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error": "Backend service not available",
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"status": "ready",
+			})
+		}
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"

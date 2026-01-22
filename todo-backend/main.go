@@ -103,6 +103,25 @@ func main() {
 		c.JSON(http.StatusCreated, newTodo)
 	})
 
+	router.GET("/healthz", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "OK",
+		})
+	})
+
+	router.GET("/ready", func(c *gin.Context) {
+		err := db.Ping()
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error": "Database not available",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ready",
+		})
+	})
+
 	port := getEnv("PORT", "6000")
 
 	fmt.Printf("Server started in port %s\n", port)
