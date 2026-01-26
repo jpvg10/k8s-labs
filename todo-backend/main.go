@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
 
 type Todo struct {
+	Id          int    `json:"id"`
 	Description string `json:"description" binding:"required"`
+	Done        bool   `json:"done"`
 }
 
 func getEnv(key, fallback string) string {
@@ -23,22 +26,33 @@ func getEnv(key, fallback string) string {
 
 func getTodos(db *sql.DB) ([]Todo, error) {
 	todos := []Todo{}
-	rows, err := db.Query(`SELECT "description" FROM "todos"`)
+	rows, err := db.Query(`SELECT "id", "description", "done" FROM "todos"`)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
+		var id int
 		var description string
-		rows.Scan(&description)
-		todos = append(todos, Todo{Description: description})
+		var done bool
+		rows.Scan(&id, &description, &done)
+		todos = append(todos, Todo{Id: id, Description: description, Done: done})
 	}
 	return todos, err
 }
 
 func addTodo(db *sql.DB, todo Todo) error {
-	_, err := db.Exec(`insert into "todos"("description") values($1)`, todo.Description)
+	_, err := db.Exec(`insert into "todos"("description", "done") values($1, $2)`, todo.Description, false)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+func markTodoAsDone(db *sql.DB, id int) error {
+	_, err := db.Exec(`update "todos" set "done"=$2 where "id"=$1`, id, true)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -101,6 +115,18 @@ func main() {
 		}
 
 		c.JSON(http.StatusCreated, newTodo)
+	})
+
+	router.PUT("/todos/:id", func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+		err := markTodoAsDone(db, id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to mark the todo as done",
+			})
+			return
+		}
+		c.String(http.StatusOK, "")
 	})
 
 	router.GET("/healthz", func(c *gin.Context) {

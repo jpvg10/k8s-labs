@@ -3,19 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello world</title>
+    <title>The Project App</title>
 </head>
 <body>
-    <h1>Hello world</h1>
+    <h1>The Project App</h1>
     <img src="{{ .imagePath }}" />
     <form action="/createTodo" method="POST" name="createTodoForm">
         <input type="text" maxlength="140" name="description" />
         <input type="submit" value="Create" />
     </form>
-    <ul>
-        {{ range .todos }}
+    <h2>Todo</h2>
+    <form action="/markTodoAsDone" method="POST" name="markAsDoneForm">
+        <ul>
+            {{ range .pending }}
+            <li>
+                <span>{{ .Description }}</span>
+                <input type="hidden" name="id" value="{{ .Id }}">
+                <input type="submit" value="Mark as done" >
+            </li>
+            {{ end }}
+        </ul>
+    </form>
+    <h2>Done</h2>
+        <ul>
+            {{ range .done }}
             <li>{{ .Description }}</li>
-        {{ end }}
-    </ul>
+            {{ end }}
+        </ul>
 </body>
 </html>

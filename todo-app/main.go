@@ -13,7 +13,9 @@ import (
 )
 
 type Todo struct {
-	Description string
+	Id          int    `json:"id"`
+	Description string `json:"description" binding:"required"`
+	Done        bool   `json:"done"`
 }
 
 type TodoArray struct {
@@ -79,9 +81,20 @@ func main() {
 			}
 		}
 
+		pending := []Todo{}
+		done := []Todo{}
+		for _, t := range todos.Todos {
+			if t.Done {
+				done = append(done, t)
+			} else {
+				pending = append(pending, t)
+			}
+		}
+
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"imagePath": "/image.jpg",
-			"todos":     todos.Todos,
+			"pending":   pending,
+			"done":      done,
 		})
 	})
 
@@ -91,6 +104,16 @@ func main() {
 		res, err := http.Post(fmt.Sprintf("%s/todos", todoBackendUrl), "application/json", bytes.NewBuffer(jsonValue))
 		if err != nil || res.StatusCode >= 400 {
 			fmt.Println("Error posting the Todo")
+		}
+		c.Redirect(http.StatusFound, "/")
+	})
+
+	router.POST("/markTodoAsDone", func(c *gin.Context) {
+		id := c.PostForm("id")
+		req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/todos/%s", todoBackendUrl, id), nil)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil || res.StatusCode >= 400 {
+			fmt.Println("Error marking the Todo as done")
 		}
 		c.Redirect(http.StatusFound, "/")
 	})

@@ -20,7 +20,7 @@ metadata:
   namespace: project
 data:
   initdb.sql: |
-    CREATE TABLE todos (id SERIAL, description TEXT);
+    CREATE TABLE todos (id SERIAL, description TEXT, done BOOL);
 ---
 apiVersion: apps/v1
 kind: StatefulSet

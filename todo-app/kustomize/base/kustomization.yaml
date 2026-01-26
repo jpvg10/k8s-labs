@@ -7,4 +7,4 @@ resources:
   - service.yaml
 images:
   - name: PROJECT/IMAGE
-    newName: jpvalencia/todo-app:72207bc3f730
+    newName: jpvalencia/todo-app:6f25cd97eb5f
