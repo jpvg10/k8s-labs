@@ -6,4 +6,4 @@ resources:
   - namespace.yaml
 images:
   - name: PROJECT/IMAGE
-    newName: jpvalencia/broadcaster:da6513feaaf7
+    newName: jpvalencia/broadcaster:1c5b117f4756

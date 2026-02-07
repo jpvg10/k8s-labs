@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/nats-io/nats.go"
 )
@@ -19,6 +20,24 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func writeToFile(content string) {
+	dir := filepath.Join("/", "usr", "src", "app", "files")
+	filepath := filepath.Join(dir, "output.txt")
+
+	os.MkdirAll(dir, 0755)
+
+	f, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("Error opening file: %v\n", err)
+		return
+	}
+	defer f.Close()
+
+	if _, err := f.WriteString(content); err != nil {
+		fmt.Printf("Error writing to file: %v\n", err)
+	}
 }
 
 func main() {
@@ -39,7 +58,9 @@ func main() {
 			fmt.Printf("Error unmarshaling created todo: %v\n", err)
 			return
 		}
-		fmt.Printf("[TODO CREATED] ID: %d, Description: %s, Done: %v\n", todo.Id, todo.Description, todo.Done)
+		output := fmt.Sprintf("[TODO CREATED] ID: %d, Description: %s, Done: %v\n", todo.Id, todo.Description, todo.Done)
+		fmt.Print(output)
+		writeToFile(output)
 	})
 
 	nc.Subscribe("todos.updated", func(msg *nats.Msg) {
@@ -48,7 +69,9 @@ func main() {
 			fmt.Printf("Error unmarshaling updated todo: %v\n", err)
 			return
 		}
-		fmt.Printf("[TODO UPDATED] ID: %d, Description: %s, Done: %v\n", todo.Id, todo.Description, todo.Done)
+		output := fmt.Sprintf("[TODO UPDATED] ID: %d, Description: %s, Done: %v\n", todo.Id, todo.Description, todo.Done)
+		fmt.Print(output)
+		writeToFile(output)
 	})
 
 	fmt.Println("Listening for NATS messages on 'todos.created' and 'todos.updated'...")

@@ -13,9 +13,16 @@ spec:
       labels:
         app: broadcaster
     spec:
+      volumes:
+        - name: shared-folder
+          persistentVolumeClaim:
+            claimName: broadcaster-pv-claim
       containers:
         - name: broadcaster
           image: PROJECT/IMAGE
+          volumeMounts:
+          - name: shared-folder
+            mountPath: /usr/src/app/files
           envFrom:
             - configMapRef:
                 name: broadcaster-configmap
