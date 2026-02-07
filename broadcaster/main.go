@@ -52,7 +52,7 @@ func main() {
 
 	fmt.Printf("Connected to NATS at %s\n", natsURL)
 
-	nc.Subscribe("todos.created", func(msg *nats.Msg) {
+	nc.QueueSubscribe("todos.created", "broadcasters", func(msg *nats.Msg) {
 		var todo Todo
 		if err := json.Unmarshal(msg.Data, &todo); err != nil {
 			fmt.Printf("Error unmarshaling created todo: %v\n", err)
@@ -63,7 +63,7 @@ func main() {
 		writeToFile(output)
 	})
 
-	nc.Subscribe("todos.updated", func(msg *nats.Msg) {
+	nc.QueueSubscribe("todos.updated", "broadcasters", func(msg *nats.Msg) {
 		var todo Todo
 		if err := json.Unmarshal(msg.Data, &todo); err != nil {
 			fmt.Printf("Error unmarshaling updated todo: %v\n", err)
