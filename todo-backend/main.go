@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"github.com/nats-io/nats.go"
 )
 
 type Todo struct {
@@ -42,22 +44,46 @@ func getTodos(db *sql.DB) ([]Todo, error) {
 	return todos, err
 }
 
-func addTodo(db *sql.DB, todo Todo) error {
-	_, err := db.Exec(`insert into "todos"("description", "done") values($1, $2)`, todo.Description, false)
+func addTodo(db *sql.DB, todo Todo, nc *nats.Conn) (Todo, error) {
+	var insertedTodo Todo
+	err := db.QueryRow(
+		`insert into "todos"("description", "done") values($1, $2) returning "id", "description", "done"`,
+		todo.Description,
+		false,
+	).Scan(&insertedTodo.Id, &insertedTodo.Description, &insertedTodo.Done)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return insertedTodo, err
 	}
-	return nil
+
+	message, err := json.Marshal(insertedTodo)
+	sendNatsMessage(nc, "todos.created", message)
+
+	return insertedTodo, nil
 }
 
-func markTodoAsDone(db *sql.DB, id int) error {
-	_, err := db.Exec(`update "todos" set "done"=$2 where "id"=$1`, id, true)
+func markTodoAsDone(db *sql.DB, id int, nc *nats.Conn) (Todo, error) {
+	var updatedTodo Todo
+	err := db.QueryRow(
+		`update "todos" set "done"=$2 where "id"=$1 returning "id", "description", "done"`,
+		id,
+		true,
+	).Scan(&updatedTodo.Id, &updatedTodo.Description, &updatedTodo.Done)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return updatedTodo, err
 	}
-	return nil
+
+	message, err := json.Marshal(updatedTodo)
+	sendNatsMessage(nc, "todos.updated", message)
+
+	return updatedTodo, nil
+}
+
+func sendNatsMessage(nc *nats.Conn, topic string, message []byte) {
+	if err := nc.Publish(topic, []byte(message)); err != nil {
+		fmt.Printf("Failed to publish NATS message: %v\n", err)
+	}
 }
 
 func main() {
@@ -66,6 +92,7 @@ func main() {
 	dbUser := getEnv("DB_USER", "postgres")
 	dbPassword := getEnv("DB_PASSWORD", "example")
 	dbName := getEnv("DB_NAME", "postgres")
+	natsURL := getEnv("NATS_URL", "nats://localhost:4222")
 
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
 	db, err := sql.Open("postgres", psqlconn)
@@ -75,6 +102,16 @@ func main() {
 		return
 	}
 	defer db.Close()
+
+	var nc *nats.Conn
+	nc, err = nats.Connect(natsURL)
+	if err != nil {
+		fmt.Printf("NATS connection failed: %v\n", err)
+		fmt.Println("Continuing without NATS...")
+	} else {
+		defer nc.Close()
+		fmt.Println("Connected to NATS successfully")
+	}
 
 	router := gin.Default()
 
@@ -106,7 +143,7 @@ func main() {
 			return
 		}
 
-		err := addTodo(db, newTodo)
+		insertedTodo, err := addTodo(db, newTodo, nc)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Failed to add new todo to the database",
@@ -114,19 +151,19 @@ func main() {
 			return
 		}
 
-		c.JSON(http.StatusCreated, newTodo)
+		c.JSON(http.StatusCreated, insertedTodo)
 	})
 
 	router.PUT("/todos/:id", func(c *gin.Context) {
 		id, _ := strconv.Atoi(c.Param("id"))
-		err := markTodoAsDone(db, id)
+		updatedTodo, err := markTodoAsDone(db, id, nc)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Failed to mark the todo as done",
 			})
 			return
 		}
-		c.String(http.StatusOK, "")
+		c.JSON(http.StatusOK, updatedTodo)
 	})
 
 	router.GET("/healthz", func(c *gin.Context) {
