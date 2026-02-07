@@ -23,6 +23,8 @@ jobs:
     strategy:
       matrix:
         app:
+          - name: broadcaster
+            path: broadcaster
           - name: todo-app
             path: todo-app
           - name: todo-backend
@@ -55,6 +57,8 @@ jobs:
     strategy:
       matrix:
         app:
+          - name: broadcaster
+            path: broadcaster
           - name: todo-app
             path: todo-app
           - name: todo-backend
