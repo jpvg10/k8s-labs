@@ -5,6 +5,7 @@ metadata:
   namespace: project
 data:
   PORT: "6000"
+  NATS_URL: nats://my-nats:4222
   DB_HOST: "postgres-svc"
   # TODO: store password in a Secret
   DB_PASSWORD: example

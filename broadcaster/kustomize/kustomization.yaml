@@ -4,7 +4,6 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - namespace.yaml
-  - service.yaml
 images:
   - name: PROJECT/IMAGE
-    newName: jpvalencia/todo-backend:b9bd4215b2f6
+    newName: jpvalencia/broadcaster:da6513feaaf7
