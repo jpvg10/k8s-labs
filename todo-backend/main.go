@@ -86,6 +86,8 @@ func sendNatsMessage(nc *nats.Conn, topic string, message []byte) {
 	}
 }
 
+// TODO: if it starts without NATS it won't connect when NATS becomes available
+
 func main() {
 	dbHost := getEnv("DB_HOST", "localhost")
 	dbPort := 5432
