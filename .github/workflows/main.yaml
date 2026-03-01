@@ -43,13 +43,13 @@ jobs:
 
       - name: Docker build and push to ACR
         run: |
-          az acr login --name ${{ secrets.REGISTRY_LOGIN_SERVER }}
-          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} ${{ matrix.app.path }}
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+          az acr login --name ${{ vars.REGISTRY_LOGIN_SERVER }}
+          docker build -t ${{ vars.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }} ${{ matrix.app.path }}
+          docker push ${{ vars.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
 
       - name: Log image push details
         run: |
-          echo "Image pushed: ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
+          echo "Image pushed: ${{ vars.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
 
   deploy-to-aks:
     needs: build-and-push
@@ -94,9 +94,10 @@ jobs:
       - name: Update image and namespace in kustomization
         working-directory: ./${{ matrix.app.path }}
         run: |
-          IMAGE=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
-          sed -E -i "s|(^[[:space:]]*newName:[[:space:]]*).*|\1${IMAGE}|" kustomize/base/kustomization.yaml
-          echo "namespace: ${{ env.NAMESPACE }}" >> kustomize/base/kustomization.yaml
+          IMAGE=${{ vars.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
+          cd kustomize/base
+          kustomize edit set image PROJECT/IMAGE=${IMAGE}
+          kustomize edit set namespace ${{ env.NAMESPACE }}
 
       - uses: azure/k8s-bake@v3
         id: bake
