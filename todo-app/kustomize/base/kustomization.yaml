@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment.yaml
-  - namespace.yaml
   - service.yaml
 images:
   - name: PROJECT/IMAGE
