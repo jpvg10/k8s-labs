@@ -4,18 +4,7 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - service.yaml
-helmCharts:
-  - name: nats
-    repo: https://nats-io.github.io/k8s/helm/charts/
-    version: 2.12.4
-    releaseName: my-nats
-    namespace: project
-    valuesInline:
-      config:
-        cluster:
-          enabled: true
-        jetstream:
-          enabled: true
+  - ../../../shared/nats
 images:
   - name: PROJECT/IMAGE
     newName: jpvalencia/todo-backend:b9bd4215b2f6
