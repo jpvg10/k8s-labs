@@ -1,6 +1,12 @@
+NATS installed as part of the deployment.
+
+Local deployment:
+
 ```bash
-kubens project
-helm repo add nats https://nats-io.github.io/k8s/helm/charts/
-helm repo update
-helm install my-nats nats/nats
+kustomize build --enable-helm kustomize/overlays/local/ | kubectl apply -f -
+```
+
+Azure deployment:
+```bash
+kustomize build --enable-helm kustomize/overlays/azure/ | kubectl apply -f -
 ```

@@ -6,3 +6,5 @@ bin/
 *.tfstate.*
 
 *.tfvars
+
+**/kustomize/**/charts

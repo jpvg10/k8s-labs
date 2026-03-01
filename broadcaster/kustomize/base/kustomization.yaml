@@ -3,6 +3,18 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment.yaml
+helmCharts:
+  - name: nats
+    repo: https://nats-io.github.io/k8s/helm/charts/
+    version: 2.12.4
+    releaseName: my-nats
+    namespace: project
+    valuesInline:
+      config:
+        cluster:
+          enabled: true
+        jetstream:
+          enabled: true
 images:
   - name: PROJECT/IMAGE
     newName: jpvalencia/broadcaster:e70c3970f2df
