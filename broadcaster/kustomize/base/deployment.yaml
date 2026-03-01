@@ -6,7 +6,7 @@ metadata:
 spec:
   strategy: # TODO: fix volume multi-attach problem to avoid using Recreate
     type: Recreate
-  replicas: 2
+  replicas: 1 # TODO: increase after fixing multi-attach problem
   selector:
     matchLabels:
       app: broadcaster
