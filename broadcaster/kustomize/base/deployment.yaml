@@ -4,6 +4,8 @@ metadata:
   name: broadcaster-dep
   namespace: project
 spec:
+  strategy: # TODO: fix volume multi-attach problem to avoid using Recreate
+    type: Recreate
   replicas: 2
   selector:
     matchLabels:

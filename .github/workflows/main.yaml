@@ -4,6 +4,7 @@ name: Build, push to ACR, and deploy to AKS
 on:
   push:
     paths:
+      - 'broadcaster/**'
       - 'todo-app/**'
       - 'todo-backend/**'
       - '.github/workflows/**'
