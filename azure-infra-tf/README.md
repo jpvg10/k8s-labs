@@ -14,9 +14,13 @@ terraform init
 terraform plan
 terraform apply
 
-# Store REGISTRY_LOGIN_SERVER, AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID (without quotes) as secrets on the GitHub repository
+# Store REGISTRY_LOGIN_SERVER as a variable on the GitHub repository
+# Store AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID as secrets on the GitHub repository
 
 # Copy SERVICE_PRINCIPAL_ID to aks-cluster/terraform.tfvars
+cd ../aks-cluster
+cp terraform.tfvars.example terraform.tfvars
+# Replace values with your own values
 
 # To see the output values again:
 terraform output
@@ -25,9 +29,6 @@ terraform output
 For each exercise:
 ```bash
 cd aks-cluster
-
-cp terraform.tfvars.example terraform.tfvars
-# Replace values with your own values
 
 az login
 
@@ -41,6 +42,16 @@ az aks get-credentials --resource-group k8s-labs --name k8s-labs-cluster
 # To enable monitoring and logs (TODO: do it with Terraform):
 az aks update --enable-azure-monitor-metrics --resource-group k8s-labs --name k8s-labs-cluster
 az aks enable-addons --addon monitoring --resource-group k8s-labs --name k8s-labs-cluster
+
+## Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+kubectl patch configmap argocd-cm -n argocd --type merge -p '{"data":{"kustomize.buildOptions":"--enable-helm"}}'
+kubectl get svc argocd-server -n argocd -o=jsonpath='{.status.loadBalancer.ingress[0].ip}'
+# User is admin
+kubectl get -n argocd secrets argocd-initial-admin-secret -o yaml
+# Base 64 decode the password
 
 terraform destroy
 ```
