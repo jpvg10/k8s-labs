@@ -1,4 +1,4 @@
-name: Build, push to ACR, and deploy to AKS
+name: Build, push to ACR, and update repo with new images
 # Using OIDC for authentication
 
 on:
@@ -12,7 +12,7 @@ on:
 
 permissions:
   id-token: write  # Required for OIDC authentication
-  contents: read
+  contents: write
 
 env:
   RESOURCE_GROUP: k8s-labs
@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Azure login
         uses: azure/login@v2
@@ -52,68 +52,28 @@ jobs:
         run: |
           echo "Image pushed: ${{ vars.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}"
 
-  deploy-to-aks:
+  update-kustomization:
     needs: build-and-push
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app:
-          - name: broadcaster
-            path: broadcaster
-          - name: todo-app
-            path: todo-app
-          - name: todo-backend
-            path: todo-backend
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Set branch env var
+      - name: Update images in kustomization files
         run: |
-          branch="${GITHUB_REF#refs/heads/}"
-          if [ "$branch" = "main" ]; then
-            ns="project"
-          else
-            ns="$branch"
-          fi
-          echo "NAMESPACE=$ns" >> $GITHUB_ENV
+          for app in broadcaster todo-app todo-backend; do
+            (
+              IMAGE=${{ vars.REGISTRY_LOGIN_SERVER }}/${app}:${{ github.sha }}
+              cd $app/kustomize/overlays/azure
+              kustomize edit set image PROJECT/IMAGE=${IMAGE}
+            )
+          done
 
-      - name: Azure login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Set AKS context
-        uses: azure/aks-set-context@v4
-        with:
-          resource-group: ${{ env.RESOURCE_GROUP }}
-          cluster-name: ${{ env.CLUSTER_NAME }}
-
-      - name: Update image and namespace in kustomization
-        working-directory: ./${{ matrix.app.path }}
+      - name: Commit the images to the repo
         run: |
-          IMAGE=${{ vars.REGISTRY_LOGIN_SERVER }}/${{ matrix.app.name }}:${{ github.sha }}
-          cd kustomize/base
-          kustomize edit set image PROJECT/IMAGE=${IMAGE}
-          kustomize edit set namespace ${{ env.NAMESPACE }}
-
-      - uses: azure/k8s-bake@v3
-        id: bake
-        with:
-          renderEngine: kustomize
-          kustomizationPath: ${{ matrix.app.path }}/kustomize/overlays/azure
-          kubectl-version: latest
-          arguments: |
-            --enable-helm
-
-      - name: Create namespace if not exists
-        run: |
-          kubectl create namespace ${{ env.NAMESPACE }} || true
-
-      - uses: azure/k8s-deploy@v4
-        with:
-          manifests: ${{ steps.bake.outputs.manifestsBundle }}
-          namespace: ${{ env.NAMESPACE }}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "set new image tags"
+          git push
