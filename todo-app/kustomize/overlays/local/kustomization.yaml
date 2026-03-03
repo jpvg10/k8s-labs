@@ -5,3 +5,6 @@ resources:
   - ingress.yaml
   - pv-claim.yaml
   - pv.yaml
+images:
+  - name: PROJECT/IMAGE
+    newName: jpvalencia/todo-app:f4b99bca7db4

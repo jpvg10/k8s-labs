@@ -4,6 +4,3 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - service.yaml
-images:
-  - name: PROJECT/IMAGE
-    newName: jpvalencia/todo-app:f4b99bca7db4

@@ -4,6 +4,3 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - ../../../shared/nats
-images:
-  - name: PROJECT/IMAGE
-    newName: jpvalencia/broadcaster:e70c3970f2df

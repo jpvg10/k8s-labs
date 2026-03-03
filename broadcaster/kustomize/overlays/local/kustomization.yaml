@@ -4,3 +4,6 @@ resources:
   - ../../base
   - pv-claim.yaml
   - pv.yaml
+images:
+  - name: PROJECT/IMAGE
+    newName: jpvalencia/broadcaster:e70c3970f2df
