@@ -4,8 +4,6 @@ metadata:
   name: todo-app-dep
   namespace: project
 spec:
-  strategy: # TODO: fix volume multi-attach problem to avoid using Recreate
-    type: Recreate
   replicas: 1
   selector:
     matchLabels:

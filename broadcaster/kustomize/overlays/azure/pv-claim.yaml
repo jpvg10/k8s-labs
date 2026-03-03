@@ -4,7 +4,7 @@ metadata:
   name: broadcaster-pv-claim
   namespace: project
 spec:
-  storageClassName: default
+  storageClassName: azurefile-csi
   accessModes:
     - ReadWriteOnce
   resources:

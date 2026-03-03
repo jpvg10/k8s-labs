@@ -4,7 +4,7 @@ metadata:
   name: todo-app-pv-claim
   namespace: project
 spec:
-  storageClassName: default
+  storageClassName: azurefile-csi
   accessModes:
     - ReadWriteOnce
   resources:

@@ -4,7 +4,7 @@ metadata:
   name: log-output-pv-claim
   namespace: exercises
 spec:
-  storageClassName: default
+  storageClassName: azurefile-csi
   accessModes:
     - ReadWriteOnce
   resources:
