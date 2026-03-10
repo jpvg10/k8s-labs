@@ -12,3 +12,4 @@ helmCharts:
           enabled: true
         jetstream:
           enabled: true
+      namespaceOverride: project
