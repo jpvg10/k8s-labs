@@ -2,7 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-  - database.yaml
+patches:
+  - path: database-patch.yaml
 images:
   - name: PROJECT/IMAGE
     newName: jpvalencia/todo-backend:b9bd4215b2f6

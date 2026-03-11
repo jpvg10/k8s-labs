@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-stset
+  namespace: project
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data-storage
+      spec:
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 100Mi
