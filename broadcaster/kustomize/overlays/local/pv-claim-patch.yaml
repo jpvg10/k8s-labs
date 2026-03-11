@@ -5,8 +5,3 @@ metadata:
   namespace: project
 spec:
   storageClassName: broadcaster-pv
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
