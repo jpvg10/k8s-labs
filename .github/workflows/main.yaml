@@ -65,7 +65,9 @@ jobs:
           for app in broadcaster todo-app todo-backend; do
             (
               IMAGE=${{ vars.REGISTRY_LOGIN_SERVER }}/${app}:${{ github.sha }}
-              cd $app/kustomize/overlays/azure
+              cd $app/kustomize/overlays/azure/prod
+              kustomize edit set image PROJECT/IMAGE=${IMAGE}
+              cd ../staging
               kustomize edit set image PROJECT/IMAGE=${IMAGE}
             )
           done
