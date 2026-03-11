@@ -5,8 +5,3 @@ metadata:
   namespace: project
 spec:
   storageClassName: todo-app-pv
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
