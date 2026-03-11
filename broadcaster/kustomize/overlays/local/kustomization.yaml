@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../base
   - pv.yaml
+  - ../../../../shared/nats/local
 patches:
   - path: pv-claim-patch.yaml
 images:

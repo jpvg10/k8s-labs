@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../../base
+- ../../../../../shared/nats/staging
+images:
+- name: PROJECT/IMAGE
+  newName: k8slabscontainerregistry.azurecr.io/broadcaster
+  newTag: 89d5f32567e60353c646d08d0ab503e29676e9bc
+namePrefix: staging-
+namespace: staging
