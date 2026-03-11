@@ -6,5 +6,4 @@ images:
 - name: PROJECT/IMAGE
   newName: k8slabscontainerregistry.azurecr.io/todo-app
   newTag: 2c8eeac902b8523df2ad7db64027a8394f82482d
-namePrefix: staging-
 namespace: staging
