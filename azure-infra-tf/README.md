@@ -39,7 +39,7 @@ terraform apply
 az aks get-credentials --resource-group k8s-labs --name k8s-labs-cluster
 # Answer "y" if it asks to overwrite
 
-# To enable monitoring and logs (TODO: do it with Terraform):
+# Optional - enable monitoring and logs (TODO: do it with Terraform):
 az aks update --enable-azure-monitor-metrics --resource-group k8s-labs --name k8s-labs-cluster
 az aks enable-addons --addon monitoring --resource-group k8s-labs --name k8s-labs-cluster
 

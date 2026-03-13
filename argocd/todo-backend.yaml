@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-backend
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/jpvg10/k8s-labs
+    path: todo-backend/kustomize/overlays/azure/
+    targetRevision: HEAD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: project
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+    - CreateNamespace=true
