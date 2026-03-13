@@ -8,6 +8,7 @@ spec:
     - metadata:
         name: postgres-data-storage
       spec:
+        accessModes: ["ReadWriteOnce"]
         storageClassName: local-path
         resources:
           requests:
