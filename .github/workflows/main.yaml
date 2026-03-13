@@ -3,12 +3,13 @@ name: Build, push to ACR, and update repo with new images
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - 'broadcaster/**'
       - 'todo-app/**'
       - 'todo-backend/**'
       - '.github/workflows/**'
-  workflow_dispatch:
 
 permissions:
   id-token: write  # Required for OIDC authentication
