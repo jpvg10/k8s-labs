@@ -3,6 +3,5 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment.yaml
-  - ingress.yaml
   - pv-claim.yaml
   - service.yaml

@@ -1,11 +1,9 @@
-# TODO: fix bug with same IP address in different namespaces
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: todo-app-ingress
   namespace: project
 spec:
-  ingressClassName: webapprouting.kubernetes.azure.com
   rules:
   - http:
       paths:
