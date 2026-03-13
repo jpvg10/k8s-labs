@@ -6,5 +6,5 @@ resources:
 images:
 - name: PROJECT/IMAGE
   newName: k8slabscontainerregistry.azurecr.io/todo-backend
-  newTag: d678e20893a5e1d043d21692137032016066759c
+  newTag: 43f1ca3a17264f4001e2b58a6c8df5408c38aabc
 namespace: project
