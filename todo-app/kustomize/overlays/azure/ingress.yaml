@@ -1,0 +1,18 @@
+# TODO: migrate to Application Gateway for Containers once it becomes available in Sweden region
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-app-ingress
+  namespace: project
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: todo-app-svc
+            port:
+              number: 1234

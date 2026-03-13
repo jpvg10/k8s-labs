@@ -1,9 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- ../../../base
+- ../../base
+- ../../../../shared/nats
 images:
 - name: PROJECT/IMAGE
-  newName: k8slabscontainerregistry.azurecr.io/todo-app
+  newName: k8slabscontainerregistry.azurecr.io/broadcaster
   newTag: d678e20893a5e1d043d21692137032016066759c
-namespace: prod
+namespace: project
